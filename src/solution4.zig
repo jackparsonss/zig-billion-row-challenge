@@ -154,19 +154,30 @@ pub fn solution() !void {
 
     std.mem.sortUnstable([]const u8, stations.items, {}, lessThan);
 
-    std.debug.print("{{", .{});
-    for (stations.items, 0..) |station, i| {
-        if (i > 0) {
-            std.debug.print(", ", .{});
-        }
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    const io = threaded.ioBasic();
+    defer threaded.deinit();
+
+    var write_buf: [2048]u8 = undefined;
+    var fw = std.Io.File.stdout().writerStreaming(io, &write_buf);
+    const w = &fw.interface;
+    try w.writeAll("{");
+    const sf = stats.get(stations.items[0]).?;
+    const fminf = @as(f64, @floatFromInt(sf.min)) / 10.0;
+    const fmaxf = @as(f64, @floatFromInt(sf.max)) / 10.0;
+    const meanf = @as(f64, @floatFromInt(sf.sum)) / @as(f64, @floatFromInt(sf.count)) / 10.0;
+    try w.print("{s}={d:.1}/{d:.1}/{d:.1}", .{ stations.items[0], fminf, meanf, fmaxf });
+
+    for (stations.items[1 .. stations.capacity - 1]) |station| {
+        try w.writeAll(", ");
         const s = stats.get(station).?;
         const fmin = @as(f64, @floatFromInt(s.min)) / 10.0;
         const fmax = @as(f64, @floatFromInt(s.max)) / 10.0;
         const mean = @as(f64, @floatFromInt(s.sum)) / @as(f64, @floatFromInt(s.count)) / 10.0;
-        std.debug.print("{s}={d:.1}/{d:.1}/{d:.1}", .{ station, fmin, mean, fmax });
+        try w.print("{s}={d:.1}/{d:.1}/{d:.1}", .{ station, fmin, mean, fmax });
     }
-
-    std.debug.print("}}\n", .{});
+    try w.writeAll("}\n");
+    try w.flush();
 }
 
 fn lessThan(_: void, a: []const u8, b: []const u8) bool {

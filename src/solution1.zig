@@ -74,9 +74,9 @@ pub fn solution() !void {
         if (i > 0) {
             std.debug.print(", ", .{});
         }
-        const s = stats.get(station.*).?;
+        const s = stats.get(station).?;
         const mean = s.sum / @as(f64, @floatFromInt(s.count));
-        std.debug.print("{s}={d:.1}/{d:.1}/{d:.1}", .{ station.*, s.min, mean, s.max });
+        std.debug.print("{s}={d:.1}/{d:.1}/{d:.1}", .{ station, s.min, mean, s.max });
     }
 
     std.debug.print("}}\n", .{});

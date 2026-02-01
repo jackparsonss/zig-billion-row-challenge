@@ -8,7 +8,7 @@ const Stats = struct {
 };
 
 const map = std.StringHashMap(Stats);
-const array = std.ArrayList(*[]const u8);
+const array = std.ArrayList([]const u8);
 
 /// Parses a temperature string in the format -?[0-9]{1,2}\.[0-9]
 /// into a fixed-point integer (value * 10). E.g. "13.5" -> 135, "-7.2" -> -72.
@@ -32,12 +32,13 @@ inline fn parseTemp(bytes: []const u8) i16 {
     return if (neg) -result else result;
 }
 
-pub fn solution2() !void {
+pub fn solution() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
 
     var stats = map.init(allocator);
+    try stats.ensureTotalCapacity(8192);
     defer stats.deinit();
 
     var threaded: std.Io.Threaded = .init_single_threaded;
@@ -85,26 +86,26 @@ pub fn solution2() !void {
     var stations = try array.initCapacity(allocator, stats.unmanaged.size);
     var it = stats.keyIterator();
     while (it.next()) |station_name| {
-        try stations.append(allocator, station_name);
+        try stations.append(allocator, station_name.*);
     }
 
-    std.mem.sort(*[]const u8, stations.items, {}, struct {
-        fn lessThan(_: void, a: *[]const u8, b: *[]const u8) bool {
-            return std.mem.order(u8, a.*, b.*) == .lt;
-        }
-    }.lessThan);
+    std.mem.sortUnstable([]const u8, stations.items, {}, lessThan);
 
     std.debug.print("{{", .{});
     for (stations.items, 0..) |station, i| {
         if (i > 0) {
             std.debug.print(", ", .{});
         }
-        const s = stats.get(station.*).?;
+        const s = stats.get(station).?;
         const fmin = @as(f64, @floatFromInt(s.min)) / 10.0;
         const fmax = @as(f64, @floatFromInt(s.max)) / 10.0;
         const mean = @as(f64, @floatFromInt(s.sum)) / @as(f64, @floatFromInt(s.count)) / 10.0;
-        std.debug.print("{s}={d:.1}/{d:.1}/{d:.1}", .{ station.*, fmin, mean, fmax });
+        std.debug.print("{s}={d:.1}/{d:.1}/{d:.1}", .{ station, fmin, mean, fmax });
     }
 
     std.debug.print("}}\n", .{});
+}
+
+fn lessThan(_: void, a: []const u8, b: []const u8) bool {
+    return std.mem.order(u8, a, b) == std.math.Order.lt;
 }

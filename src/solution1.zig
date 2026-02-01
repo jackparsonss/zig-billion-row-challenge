@@ -8,14 +8,15 @@ const Stats = struct {
 };
 
 const map = std.StringHashMap(Stats);
-const array = std.ArrayList(*[]const u8);
+const array = std.ArrayList([]const u8);
 
-pub fn solution1() !void {
+pub fn solution() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
 
     var stats = map.init(allocator);
+    try stats.ensureTotalCapacity(8192);
     defer stats.deinit();
 
     var threaded: std.Io.Threaded = .init_single_threaded;
@@ -63,14 +64,10 @@ pub fn solution1() !void {
     var stations = try array.initCapacity(allocator, stats.unmanaged.size);
     var it = stats.keyIterator();
     while (it.next()) |station_name| {
-        try stations.append(allocator, station_name);
+        try stations.append(allocator, station_name.*);
     }
 
-    std.mem.sort(*[]const u8, stations.items, {}, struct {
-        fn lessThan(_: void, a: *[]const u8, b: *[]const u8) bool {
-            return std.mem.order(u8, a.*, b.*) == .lt;
-        }
-    }.lessThan);
+    std.mem.sortUnstable([]const u8, stations.items, {}, lessThan);
 
     std.debug.print("{{", .{});
     for (stations.items, 0..) |station, i| {
@@ -83,4 +80,8 @@ pub fn solution1() !void {
     }
 
     std.debug.print("}}\n", .{});
+}
+
+fn lessThan(_: void, a: []const u8, b: []const u8) bool {
+    return std.mem.order(u8, a, b) == std.math.Order.lt;
 }

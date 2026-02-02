@@ -22,3 +22,12 @@ Runs in 4.34 Seconds
 
 ### Solution 4(printing)
 Runs in 4.13 Seconds
+
+### Solution 5(SIMD)
+Runs in 3.48 Seconds
+
+### Solution 6(Raw array)
+Runs in 3.48 Seconds
+
+### Solution 7(Custom Hash Table)
+Runs in 2.53 Seconds

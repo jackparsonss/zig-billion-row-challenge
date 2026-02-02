@@ -10,6 +10,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
+            .strip = true,
+            .stack_check = false,
+            .stack_protector = false,
         }),
     });
 

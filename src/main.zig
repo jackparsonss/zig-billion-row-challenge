@@ -4,7 +4,8 @@
 // const solution = @import("./solution4.zig").solution;
 // const solution = @import("./solution5.zig").solution;
 // const solution = @import("./solution6.zig").solution;
-const solution = @import("./solution7.zig").solution;
+// const solution = @import("./solution7.zig").solution;
+const solution = @import("./solution8.zig").solution;
 
 pub fn main() !void {
     try solution();

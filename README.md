@@ -31,3 +31,6 @@ Runs in 3.48 Seconds
 
 ### Solution 7(Custom Hash Table)
 Runs in 2.53 Seconds
+
+### Solution 8(Custom Hash Table)
+Runs in 2.32 Seconds
